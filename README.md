@@ -1,6 +1,7 @@
 # Aare-Exporter
 
 Aare-Exporter is a small metrics exporter written in Go and made for usage with Prometheus.
+The River Aare is the river that flows through the capital of Switzerland. Bern.
 
 It exposes temperature data provided via the [Aare API by Purpl3.net](https://api.purpl3.net/aare/doc/) as metrics for Prometheus.
 
