@@ -10,45 +10,48 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
+
 // Create aare struct
 type aare struct {
 	AareTempLast float64 `json:"aaretemp_last"`
-	AareTempMax float64 `json:"aaretemp_max24"`
-	AareTempAvg float64 `json:"aaretemp_mid24"`
+	AareTempMax  float64 `json:"aaretemp_max24"`
+	AareTempAvg  float64 `json:"aaretemp_mid24"`
 }
+
 // Define constants
 const (
-	url 		= "https://api.purpl3.net/aare/v1/aare.json"
-	version 	= "1.0"
-	interval 	= 30
+	url      = "https://api.purpl3.net/aare/v1/aare.json"
+	version  = "1.0"
+	interval = 30
 )
+
 // Define variables (prometheus metrics)
 var (
-	aare_temp_celsius = prometheus.NewGauge(prometheus.GaugeOpts{
+	aareTempCelsius = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "aare_temp_celsius",
 		Help: "Displays the last measured aare temperature.",
-    })
-    aare_temp_celsius_max_day = prometheus.NewGauge(prometheus.GaugeOpts{
+	})
+	aareTempCelsiusMaxDay = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "aare_temp_celsius_max_day",
 		Help: "Displays the maximum temperature of this day.",
-    })
-    aare_temp_celsius_avg_day = prometheus.NewGauge(prometheus.GaugeOpts{
+	})
+	aareTempCelsiusAvgDay = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "aare_temp_celsius_avg_day",
 		Help: "Displays the average temperature throughout this day.",
-    })
+	})
 )
 
 // Register prometheus metrics
 func init() {
 	// Metrics have to be registered to be exposed:
-	prometheus.MustRegister(aare_temp_celsius)
-	prometheus.MustRegister(aare_temp_celsius_max_day)
-	prometheus.MustRegister(aare_temp_celsius_avg_day)
+	prometheus.MustRegister(aareTempCelsius)
+	prometheus.MustRegister(aareTempCelsiusMaxDay)
+	prometheus.MustRegister(aareTempCelsiusAvgDay)
 }
 
-// Make reqauest, get json, unmarshal into struct, 
-// set prometheus gauges with value and wait 
-func doRequest(){
+// Make reqauest, get json, unmarshal into struct,
+// set prometheus gauges with value and wait
+func doRequest() {
 	for {
 		aareClient := http.Client{
 			Timeout: time.Second * 2, // Maximum of 2 secs
@@ -71,21 +74,20 @@ func doRequest(){
 			log.Fatal(readErr)
 		}
 
-		aare_json := aare{}
-		jsonErr := json.Unmarshal(body, &aare_json)
+		aareJSON := aare{}
+		jsonErr := json.Unmarshal(body, &aareJSON)
 		if jsonErr != nil {
 			log.Fatal(jsonErr)
 		}
 
-		aare_temp_celsius.Set(aare_json.AareTempLast)
-		aare_temp_celsius_max_day.Set(aare_json.AareTempMax)
-		aare_temp_celsius_avg_day.Set(aare_json.AareTempAvg)
+		aareTempCelsius.Set(aareJSON.AareTempLast)
+		aareTempCelsiusMaxDay.Set(aareJSON.AareTempMax)
+		aareTempCelsiusAvgDay.Set(aareJSON.AareTempAvg)
 
 		// Wait for the next interval
 		time.Sleep(interval * time.Second)
 	}
 }
-
 
 func main() {
 	// Run in background
