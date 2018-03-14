@@ -16,12 +16,16 @@ type aare struct {
 	AareTempLast float64 `json:"aaretemp_last"`
 	AareTempMax  float64 `json:"aaretemp_max24"`
 	AareTempAvg  float64 `json:"aaretemp_mid24"`
+
+	AareCurrentLast float64 `json:"abfluss_last"`
+	AareCurrentMax  float64 `json:"abfluss_max24"`
+	AareCurrentAvg  float64 `json:"abfluss_mid24"`
 }
 
 // Define constants
 const (
 	url      = "https://api.purpl3.net/aare/v1/aare.json"
-	version  = "1.0"
+	version  = "1.1"
 	interval = 30
 )
 
@@ -39,6 +43,19 @@ var (
 		Name: "aare_temp_celsius_avg_day",
 		Help: "Displays the average temperature throughout this day.",
 	})
+
+	aareCurrent = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "aare_current_cms",
+		Help: "Displays the current of the aare in cubic meters per second.",
+	})
+	aareCurrentMaxDay = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "aare_current_cms_max_day",
+		Help: "Displays the maximum current of the aare in cubic meters per second throughout this day.",
+	})
+	aareCurrentAvgDay = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "aare_current_cms_avg_day",
+		Help: "Displays the average current of the aare in cubic meters per second throughout this day.",
+	})
 )
 
 // Register prometheus metrics
@@ -47,6 +64,10 @@ func init() {
 	prometheus.MustRegister(aareTempCelsius)
 	prometheus.MustRegister(aareTempCelsiusMaxDay)
 	prometheus.MustRegister(aareTempCelsiusAvgDay)
+
+	prometheus.MustRegister(aareCurrent)
+	prometheus.MustRegister(aareCurrentMaxDay)
+	prometheus.MustRegister(aareCurrentAvgDay)
 }
 
 // Make reqauest, get json, unmarshal into struct,
@@ -83,6 +104,10 @@ func doRequest() {
 		aareTempCelsius.Set(aareJSON.AareTempLast)
 		aareTempCelsiusMaxDay.Set(aareJSON.AareTempMax)
 		aareTempCelsiusAvgDay.Set(aareJSON.AareTempAvg)
+
+		aareCurrent.Set(aareJSON.AareCurrentLast)
+		aareCurrentMaxDay.Set(aareJSON.AareCurrentMax)
+		aareCurrentAvgDay.Set(aareJSON.AareCurrentAvg)
 
 		// Wait for the next interval
 		time.Sleep(interval * time.Second)
